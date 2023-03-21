@@ -17,7 +17,7 @@ namespace MS1_DataSimulator
 
             for (int i = contiguousRange.Item1; i < contiguousRange.Item2; i++)
             {
-                if (rnd.Next() < trainingFraction)
+                if (rnd.NextDouble() < trainingFraction)
                 {
                     IndicesOfTrainingSet.Add(i);
                 }
