@@ -16,14 +16,12 @@ namespace MS1_DataSimulator
         /// Peptides/proteoforms will begin eluting at random times.
         /// Training and test data will appear as totally separate mzML files to ease analysis.
         /// </summary>
-        /// <param name="fullPathsToFastas"></param>
-        /// <param name="trainingFraction"></param>
+
         public BuildAnMzmlChromatogram(List<string> fullPathsToFastas, string fullPathToOutput, int maxNumScans, double trainingFraction, double minimumIntensity)
         {
             DigestProteinsIntoPeptides proteinDigest = new(fullPathsToFastas);
             SplitPeptides split = new((0, proteinDigest.Peptides.Length), trainingFraction);
             Scan[] scans = new Scan[maxNumScans];
-
             Random rnd = new Random(42);
 
             int centerOfPeptide = 50;
@@ -71,11 +69,8 @@ namespace MS1_DataSimulator
                 else
                 {
                     CreatMzMl(Path.Combine(fullPathToOutput, "test.mzML"), scans, minimumIntensity);
-                }
-                    
+                }      
             }
-
-            
         }
 
         public static void CreatMzMl(string fullPathToOutput, Scan[] scans, double minimumIntensity)
