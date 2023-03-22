@@ -1,11 +1,4 @@
-﻿using Easy.Common.Extensions;
-using Proteomics.ProteolyticDigestion;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.Metrics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Proteomics.ProteolyticDigestion;
 
 namespace MS1_DataSimulator
 {
@@ -16,7 +9,6 @@ namespace MS1_DataSimulator
         public readonly double[] mzValues;
         public readonly double[] intensityValues;
         public double TotalSpectrumIntensity { get; private set; }
-        public readonly string? peptideSpectrumLabel;
         public readonly List<ChargeStateIsotopeCluster> ChargeStateClusters;
 
         public PeptideSpectrum(PeptideWithSetModifications peptideWithSetModifications, ChargeStatesAndEnvelopeAbundances csea, double totalSpectrumIntensity = 1)
@@ -28,7 +20,6 @@ namespace MS1_DataSimulator
             var mzAndIntensityValues = PopulateSpectrum();
             this.mzValues = mzAndIntensityValues.Item1.ToArray();
             this.intensityValues = mzAndIntensityValues.Item2.ToArray();
-            this.peptideSpectrumLabel = GetLabel();
         }
 
         public void UpdateSpectrumWithNewTotalIntensity(double newTotalIntensity) 
@@ -80,11 +71,6 @@ namespace MS1_DataSimulator
             }
 
             return (mzs, intValues);
-        }
-
-        private string? GetLabel()
-        {
-            return string.Empty;
         }
 
     }
