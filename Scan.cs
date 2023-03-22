@@ -14,7 +14,7 @@ namespace MS1_DataSimulator
             this.peptideSpectra = peptideSpectra;
         }
 
-        public (double[], double[]) Spectrum(double minimumIntensity)
+        public (double[], double[]) Spectrum(double minimumIntensity = 0)
         {
             List<double> mzs = new();
             List<double> intensities = new();
