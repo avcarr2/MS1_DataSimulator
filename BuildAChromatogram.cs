@@ -1,4 +1,7 @@
-﻿using System;
+﻿using IO.MzML;
+using MassSpectrometry;
+using MzLibUtil;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,7 +25,7 @@ namespace MS1_DataSimulator
         /// </summary>
         /// <param name="fullPathsToFastas"></param>
         /// <param name="trainingFraction"></param>
-        public BuildAnMzmlChromatogram(List<string> fullPathsToFastas, double trainingFraction)
+        public BuildAnMzmlChromatogram(List<string> fullPathsToFastas, string fullPathToOutput, double trainingFraction)
         {
             this.FullPathsToFastas = fullPathsToFastas;
             this.TrainingFraction = trainingFraction;
@@ -34,31 +37,88 @@ namespace MS1_DataSimulator
             Random rnd = new Random(42);
 
             int centerOfPeptide = 50;
-            int[] chargeStates = new int[2] { 2, 3 };
 
-            foreach (int trainingIndex in split.IndicesOfTrainingSet)
+            List<List<int>> splits = new() { split.IndicesOfTrainingSet, split.IndicesOfTestSet };
+
+            for (int j = 0; j < splits.Count; j++)
             {
-                double peakArea = 10000 * rnd.NextDouble();
-                GeneratePeak peak = new GeneratePeak(peakArea, centerOfPeptide);
-
-                for (int i = 0; i < peak.RelativeScanPositions.Count; i++)
+                foreach (int trainingIndex in splits[j])
                 {
-                    if (peak.PeakHeights[i] > 0)
+                    double peakArea = 10000 * rnd.NextDouble() + 10.0; //having a minimum of 10 means that we'll have at least 1 charge state
+                    GeneratePeak peak = new GeneratePeak(peakArea, centerOfPeptide);
+                    int maxChargeStateCount = (int)Math.Round(Math.Log10(peakArea), 0);
+                    ChargeStatesAndEnvelopeAbundances csea = new ChargeStatesAndEnvelopeAbundances(maxChargeStateCount, 1, 5);
+                    PeptideSpectrum genericSpectrum = new(proteinDigest.Peptides[trainingIndex], csea, maxChargeStateCount, csea.ChargeStates.Min(), csea.ChargeStates.Max());
+
+                    for (int i = 0; i < peak.RelativeScanPositions.Count; i++)
                     {
-                        if(!((centerOfPeptide + peak.RelativeScanPositions[i]) > maxNumScans))
+                        genericSpectrum.UpdateSpectrumWithNewTotalIntensity(peak.PeakHeights[i]);
+                        int projectedScanNumber = centerOfPeptide + peak.RelativeScanPositions[i];
+                        if (!(projectedScanNumber > (maxNumScans - 1)))
                         {
-                            scans[centerOfPeptide + peak.RelativeScanPositions[i]].AddPeptideToScan(proteinDigest.Peptides[trainingIndex], peak.PeakHeights[i], chargeStates);
+                            if (scans[centerOfPeptide + peak.RelativeScanPositions[i]] == null)
+                            {
+                                scans[centerOfPeptide + peak.RelativeScanPositions[i]] = new Scan(new List<Proteomics.ProteolyticDigestion.PeptideWithSetModifications>() { proteinDigest.Peptides[trainingIndex] }, new List<PeptideSpectrum>() { genericSpectrum });
+                            }
+                            else
+                            {
+                                scans[centerOfPeptide + peak.RelativeScanPositions[i]].AddPeptideToScan(proteinDigest.Peptides[trainingIndex], genericSpectrum);
+                            }
                         }
                         else
                         {
                             break;
                         }
+
                     }
+                    centerOfPeptide++;
                 }
-                centerOfPeptide++;
+
+                if (j == 0)
+                {
+                    CreatMzMl(Path.Combine(fullPathToOutput, "train.mzML"), scans);
+                }
+                else
+                {
+                    CreatMzMl(Path.Combine(fullPathToOutput, "test.mzML"), scans);
+                }
+                    
             }
+
+            
         }
 
-        
+        public static void CreatMzMl(string fullPathToOutput, Scan[] scans)
+        {
+            List<MsDataScan> dataScans = new();
+            for (int i = 0; i < scans.Length; i++)
+            {
+                if (!(scans[i] == null))
+                {
+                    MzSpectrum mzSpectrum = new(scans[i].Spectrum().Item1, scans[i].Spectrum().Item2, true);
+                    int oneBasedScanNumber = i;
+                    int msnOrder = 1;
+                    bool isCentroid = true;
+                    Polarity polarity = Polarity.Positive;
+                    double retentionTime = (double)i;
+                    MzRange scanWindowRange = new MzRange(scans[i].Spectrum().Item1.Min(), scans[i].Spectrum().Item1.Max());
+                    string scanFilter = "";
+                    MZAnalyzerType mzAnalyzer = MZAnalyzerType.Orbitrap;
+                    double totalIonCurrent = scans[i].Spectrum().Item2.Sum();
+                    double? injectionTime = null;
+                    double[,] noiseData = new double[1, 1];
+                    string nativeId = "";
+
+                    dataScans.Add(new MsDataScan(mzSpectrum, oneBasedScanNumber, msnOrder, isCentroid, polarity, retentionTime, scanWindowRange, scanFilter, mzAnalyzer, totalIonCurrent, injectionTime, noiseData, nativeId));
+                }
+
+            }
+            SourceFile sourceFile = new("no nativeID format", "mzML format", null, null, null);
+
+            MsDataFile dataFile = new(dataScans.ToArray(), sourceFile);
+            MzmlMethods.CreateAndWriteMyMzmlWithCalibratedSpectra(dataFile, fullPathToOutput, false);
+
+        }
+
     }
 }

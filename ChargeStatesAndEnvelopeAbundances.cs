@@ -28,7 +28,7 @@ namespace MS1_DataSimulator
 
             Random rnd = new Random();
 
-            int numChargeStates = (int)Math.Round(maxNumberChargeStates * rnd.NextDouble(),0);
+            int numChargeStates = (int)Math.Round(maxNumberChargeStates * rnd.NextDouble() + 0.5,0);//add 0.5 makes it so we get at least 1 charge state.
 
             int firstChargeState = minChargeState + (int)Math.Round((maxNumberChargeStates - numChargeStates) * rnd.NextDouble(), 0);
 

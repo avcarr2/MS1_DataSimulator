@@ -16,13 +16,13 @@ namespace MS1_DataSimulator
         public readonly double[] mzValues;
         public readonly double[] intensityValues;
         public double TotalSpectrumIntensity { get; private set; }
-        public readonly string peptideSpectrumLabel;
+        public readonly string? peptideSpectrumLabel;
         public readonly List<ChargeStateIsotopeCluster> ChargeStateClusters;
 
-        public PeptideSpectrum(PeptideWithSetModifications peptideWithSetModifications, int maxNumberChargeStates, int minChargeState, int maxChargeState, double minEnvelopeAbundance = 0.1, double totalSpectrumIntensity = 1)
+        public PeptideSpectrum(PeptideWithSetModifications peptideWithSetModifications, ChargeStatesAndEnvelopeAbundances csea, int maxNumberChargeStates, int minChargeState, int maxChargeState, double minEnvelopeAbundance = 0.1, double totalSpectrumIntensity = 1)
         {
             this.peptideWithSetModifications = peptideWithSetModifications;
-            this.chargeStatesAndEnvelopeAbundances = new ChargeStatesAndEnvelopeAbundances(maxNumberChargeStates, minChargeState, maxChargeState, minEnvelopeAbundance);
+            this.chargeStatesAndEnvelopeAbundances = csea;
             this.TotalSpectrumIntensity = totalSpectrumIntensity;
             this.ChargeStateClusters = PopulateClusters();
             var mzAndIntensityValues = PopulateSpectrum();
