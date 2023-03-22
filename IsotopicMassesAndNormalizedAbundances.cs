@@ -11,13 +11,11 @@ namespace MS1_DataSimulator
     internal class IsotopicMassesAndNormalizedAbundances
     {
         public readonly PeptideWithSetModifications peptideWithSetModifications;
-        public readonly double intensityFractionRequired;
         public readonly double[] massShiftsFromMonoisotopicMass;
         public readonly double[] isotopeAbundances;
-        public IsotopicMassesAndNormalizedAbundances(PeptideWithSetModifications pwsm, double minIntensityFraction = 0.01) 
+        public IsotopicMassesAndNormalizedAbundances(PeptideWithSetModifications pwsm) 
         {
             peptideWithSetModifications = pwsm;
-            intensityFractionRequired = minIntensityFraction;
             (massShiftsFromMonoisotopicMass, isotopeAbundances) = ComputeMassesAndAbundances();
         }
 
@@ -51,11 +49,8 @@ namespace MS1_DataSimulator
                 // normalized abundance of each isotope
                 abundances[i] /= highestAbundance;
 
-                // look for these isotopes
-                if (abundances[i] > intensityFractionRequired)
-                {
-                    isotopicMassesAndNormalizedAbundances.Add((masses[i], abundances[i]));
-                }
+                isotopicMassesAndNormalizedAbundances.Add((masses[i], abundances[i]));
+                
             }
             return (masses,abundances);
         }
