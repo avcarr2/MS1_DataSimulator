@@ -96,7 +96,7 @@ namespace MS1_DataSimulator
                     MZAnalyzerType mzAnalyzer = MZAnalyzerType.Orbitrap;
                     double totalIonCurrent = scans[i].Spectrum(minimumIntensity).Item2.Sum();
                     double? injectionTime = null;
-                    double[,] noiseData = null;
+                    double[,]? noiseData = null;
                     string nativeId = "";
 
                     dataScans.Add(new MsDataScan(mzSpectrum, oneBasedScanNumber, msnOrder, isCentroid, polarity, retentionTime, scanWindowRange, scanFilter, mzAnalyzer, totalIonCurrent, injectionTime, noiseData, nativeId));
