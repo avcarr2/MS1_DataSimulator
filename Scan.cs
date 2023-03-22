@@ -1,4 +1,5 @@
-﻿using Proteomics.ProteolyticDigestion;
+﻿using Easy.Common.Extensions;
+using Proteomics.ProteolyticDigestion;
 
 namespace MS1_DataSimulator
 {
@@ -13,15 +14,21 @@ namespace MS1_DataSimulator
             this.peptideSpectra = peptideSpectra;
         }
 
-        public (double[], double[]) Spectrum()
+        public (double[], double[]) Spectrum(double minimumIntensity)
         {
             List<double> mzs = new();
             List<double> intensities = new();
 
             for (int i = 0; i < peptideSpectra.Count; i++)
             {
-                mzs.AddRange(peptideSpectra[i].mzValues);
-                intensities.AddRange(peptideSpectra[i].intensityValues);
+                for (int j = 0; j < peptideSpectra[i].intensityValues.Length; j++)
+                {
+                    if (peptideSpectra[i].intensityValues[j] > minimumIntensity)
+                    {
+                        mzs.Add(peptideSpectra[i].mzValues[j]);
+                        intensities.Add(peptideSpectra[i].intensityValues[j]);
+                    }
+                }
             }
             intensities = intensities.SortLike(mzs.ToArray()).ToList();
             mzs.Sort();

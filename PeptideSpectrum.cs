@@ -19,7 +19,7 @@ namespace MS1_DataSimulator
         public readonly string? peptideSpectrumLabel;
         public readonly List<ChargeStateIsotopeCluster> ChargeStateClusters;
 
-        public PeptideSpectrum(PeptideWithSetModifications peptideWithSetModifications, ChargeStatesAndEnvelopeAbundances csea, int maxNumberChargeStates, int minChargeState, int maxChargeState, double minEnvelopeAbundance = 0.1, double totalSpectrumIntensity = 1)
+        public PeptideSpectrum(PeptideWithSetModifications peptideWithSetModifications, ChargeStatesAndEnvelopeAbundances csea, double totalSpectrumIntensity = 1)
         {
             this.peptideWithSetModifications = peptideWithSetModifications;
             this.chargeStatesAndEnvelopeAbundances = csea;
