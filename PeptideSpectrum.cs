@@ -1,4 +1,6 @@
 ﻿using Proteomics.ProteolyticDigestion;
+using System.Linq;
+using System.Text;
 
 namespace MS1_DataSimulator
 {
@@ -21,7 +23,7 @@ namespace MS1_DataSimulator
             this.mzValues = mzAndIntensityValues.Item1.ToArray();
             this.intensityValues = mzAndIntensityValues.Item2.ToArray();
         }
-
+        
         public void UpdateSpectrumWithNewTotalIntensity(double newTotalIntensity) 
         {
             double intensityMutiplier = newTotalIntensity / TotalSpectrumIntensity;
@@ -69,9 +71,60 @@ namespace MS1_DataSimulator
             {
                 intValues[i] *= intensityMultipler;
             }
-
             return (mzs, intValues);
         }
+        
+        public string Label()
+        {
+            StringBuilder sb = new();
 
+            //base sequence
+            sb.Append(this.peptideWithSetModifications.BaseSequence + "\t");
+
+            //full sequence
+            sb.Append(this.peptideWithSetModifications.FullSequence + "\t");
+
+            //monoisotopic mass
+            sb.Append(this.peptideWithSetModifications.MonoisotopicMass + "\t");
+
+            //number of displayed charge states
+            sb.Append(String.Join(",",this.ChargeStateClusters.Select(c => c.chargeState).ToList()) + "\t");
+
+            //list of spacing for each charge state
+            sb.Append(String.Join(",", this.ChargeStateClusters.Select(c => c.mzSpacing).ToList()) + "\t");
+
+            //list of most abundant mz value for each charge state
+            sb.Append(String.Join(",", this.ChargeStateClusters.Select(c => c.mostAbundantMz).ToList()));
+
+            return sb.ToString();
+        }
+
+        public string LabelHeader()
+        {
+            StringBuilder sb = new();
+
+            //scan number
+            sb.Append("Scan#" + "\t");
+
+            //base sequence
+            sb.Append("Base Sequence" + "\t");
+
+            //full sequence
+            sb.Append("Full Sequence" + "\t");
+
+            //monoisotopic mass
+            sb.Append("Monoisotopic Mass" + "\t");
+
+            //number of displayed charge states
+            sb.Append("Displayed Charge States" + "\t");
+
+            //list of spacing for each charge state
+            sb.Append("mz Spacing for each Charge State" + "\t");
+
+            //list of most abundant mz value for each charge state
+            sb.Append("Most Abundant mz for each Charge State");
+
+            return sb.ToString();
+        }
     }
 }

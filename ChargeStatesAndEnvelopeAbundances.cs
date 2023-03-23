@@ -1,5 +1,8 @@
 ﻿
 
+using System.Collections.Generic;
+using System;
+
 namespace MS1_DataSimulator
 {
     internal class ChargeStatesAndEnvelopeAbundances
@@ -25,8 +28,9 @@ namespace MS1_DataSimulator
             Random rnd = new Random();
 
             int numChargeStates = (int)Math.Round(maxNumberChargeStates * rnd.NextDouble() + 0.5,0);//add 0.5 makes it so we get at least 1 charge state.
-
-            int firstChargeState = minChargeState + (int)Math.Round((maxNumberChargeStates - numChargeStates) * rnd.NextDouble(), 0);
+            List<int> possibleChargeStateList = Enumerable.Range(minChargeState, maxChargeState - numChargeStates).ToList();
+            int index = rnd.Next(possibleChargeStateList.Count);
+            int firstChargeState = possibleChargeStateList[index];
 
             for (int i = 0; i < numChargeStates; i++)
             {
