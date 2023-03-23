@@ -1,8 +1,4 @@
-﻿using Easy.Common.Extensions;
-using Proteomics.ProteolyticDigestion;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.Metrics;
+﻿using Proteomics.ProteolyticDigestion;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks; 
@@ -16,7 +12,6 @@ namespace MS1_DataSimulator
         public readonly double[] mzValues;
         public readonly double[] intensityValues;
         public double TotalSpectrumIntensity { get; private set; }
-        public readonly string? peptideSpectrumLabel;
         public readonly List<ChargeStateIsotopeCluster> ChargeStateClusters;
 
         public PeptideSpectrum(PeptideWithSetModifications peptideWithSetModifications, ChargeStatesAndEnvelopeAbundances csea, double totalSpectrumIntensity = 1)
@@ -28,9 +23,8 @@ namespace MS1_DataSimulator
             var mzAndIntensityValues = PopulateSpectrum();
             this.mzValues = mzAndIntensityValues.Item1.ToArray();
             this.intensityValues = mzAndIntensityValues.Item2.ToArray();
-            this.peptideSpectrumLabel = GetLabel();
         }
-
+        
         public void UpdateSpectrumWithNewTotalIntensity(double newTotalIntensity) 
         {
             double intensityMutiplier = newTotalIntensity / TotalSpectrumIntensity;
@@ -78,14 +72,60 @@ namespace MS1_DataSimulator
             {
                 intValues[i] *= intensityMultipler;
             }
-
             return (mzs, intValues);
         }
-
-        private string? GetLabel()
+        
+        public string Label()
         {
-            return string.Empty;
+            StringBuilder sb = new();
+
+            //base sequence
+            sb.Append(this.peptideWithSetModifications.BaseSequence + "\t");
+
+            //full sequence
+            sb.Append(this.peptideWithSetModifications.FullSequence + "\t");
+
+            //monoisotopic mass
+            sb.Append(this.peptideWithSetModifications.MonoisotopicMass + "\t");
+
+            //number of displayed charge states
+            sb.Append(String.Join(",",this.ChargeStateClusters.Select(c => c.chargeState).ToList()) + "\t");
+
+            //list of spacing for each charge state
+            sb.Append(String.Join(",", this.ChargeStateClusters.Select(c => c.mzSpacing).ToList()) + "\t");
+
+            //list of most abundant mz value for each charge state
+            sb.Append(String.Join(",", this.ChargeStateClusters.Select(c => c.mostAbundantMz).ToList()));
+
+            return sb.ToString();
         }
 
+        public string LabelHeader()
+        {
+            StringBuilder sb = new();
+
+            //scan number
+            sb.Append("Scan#" + "\t");
+
+            //base sequence
+            sb.Append("Base Sequence" + "\t");
+
+            //full sequence
+            sb.Append("Full Sequence" + "\t");
+
+            //monoisotopic mass
+            sb.Append("Monoisotopic Mass" + "\t");
+
+            //number of displayed charge states
+            sb.Append("Displayed Charge States" + "\t");
+
+            //list of spacing for each charge state
+            sb.Append("mz Spacing for each Charge State" + "\t");
+
+            //list of most abundant mz value for each charge state
+            sb.Append("Most Abundant mz for each Charge State");
+
+            return sb.ToString();
+        }
     }
 }
