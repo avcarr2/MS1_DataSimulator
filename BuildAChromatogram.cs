@@ -35,6 +35,8 @@ namespace MS1_DataSimulator
                 foreach (int trainingIndex in splits[j])
                 {
                     double peakArea = 10000 * rnd.NextDouble() + 10.0; //having a minimum of 10 means that we'll have at least 1 charge state
+                    List<int> peakShifts = Enumerable.Range(0, 7).ToList();
+                    centerOfPeptide += peakShifts[rnd.Next(peakShifts.Count)];
                     GeneratePeak peak = new GeneratePeak(peakArea, centerOfPeptide);
                     int maxChargeStateCount = (int)Math.Round(Math.Log10(peakArea), 0);
                     (int, int) minMax = MinAndMaxChargeStatesForPeptide(proteinDigest.Peptides[trainingIndex], lowestObservedMz,highestObservedMz);
@@ -99,7 +101,7 @@ namespace MS1_DataSimulator
                     double totalIonCurrent = scans[i].Spectrum(minimumIntensity).Item2.Sum();
                     double? injectionTime = null;
                     double[,]? noiseData = null;
-                    string nativeId = "";
+                    string nativeId = "controllerType=0 controllerNumber=1 scan=" + oneBasedScanNumber.ToString();
 
                     dataScans.Add(new MsDataScan(mzSpectrum, oneBasedScanNumber, msnOrder, isCentroid, polarity, retentionTime, scanWindowRange, scanFilter, mzAnalyzer, totalIonCurrent, injectionTime, noiseData, nativeId));
 
