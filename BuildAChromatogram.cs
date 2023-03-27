@@ -23,15 +23,17 @@ namespace MS1_DataSimulator
         {
             DigestProteinsIntoPeptides proteinDigest = new(fullPathsToFastas);
             SplitPeptides split = new((0, proteinDigest.Peptides.Length), trainingFraction);
-            Scan[] scans = new Scan[maxNumScans];
+            
             Random rnd = new Random(42);
 
-            int centerOfPeptide = 50;
+            
 
             List<List<int>> splits = new() { split.IndicesOfTrainingSet, split.IndicesOfTestSet };
 
             for (int j = 0; j < splits.Count; j++)
             {
+                int centerOfPeptide = 50; 
+                Scan[] scans = new Scan[maxNumScans];
                 foreach (int trainingIndex in splits[j])
                 {
                     double peakArea = 10000 * rnd.NextDouble() + 10.0; //having a minimum of 10 means that we'll have at least 1 charge state
