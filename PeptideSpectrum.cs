@@ -1,7 +1,12 @@
 ﻿using Proteomics.ProteolyticDigestion;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks; 
+using System.Threading.Tasks;
+using Chemistry;
+using Easy.Common;
+using Easy.Common.Extensions;
+using MathNet.Numerics;
+using MathNet.Numerics.Statistics;
 
 namespace MS1_DataSimulator
 {
@@ -35,7 +40,33 @@ namespace MS1_DataSimulator
             }
             TotalSpectrumIntensity = intensityValues.Sum();
         }
+        /// <summary>
+        /// Returns an array of mzVals and the median charge state present. 
+        /// </summary>
+        /// <param name="lowMz"></param>
+        /// <param name="highMz"></param>
+        /// <param name="lowZ"></param>
+        /// <param name="highZ"></param>
+        /// <param name="mzVals"></param>
+        /// <returns></returns>
+        public int CreateChargeStates(double lowMz, double highMz, int lowZ, int highZ, out int[] charges)
+        {
+            List<double> mzVals = new List<double>();
+            List<int> chargesPresent = new List<int>();
+            for (int i = highZ; i >= lowMz; i--)
+            {
+                double mzVal = peptideWithSetModifications.MonoisotopicMass.ToMz(i);
+                if (mzVal >= lowMz && mzVal <= highMz)
+                {
+                    mzVals.Add(mzVal); 
+                    chargesPresent.Add(i);
+                }
+            }
 
+            charges = chargesPresent.ToArray(); 
+            return (int)charges.Select(i => (double)i).Median();
+        }
+        
         private List<ChargeStateIsotopeCluster> PopulateClusters() 
         {
             List<ChargeStateIsotopeCluster> chargeStateClusters = new();
@@ -45,6 +76,18 @@ namespace MS1_DataSimulator
                 IsotopicMassesAndNormalizedAbundances unchargedParentCluster = new IsotopicMassesAndNormalizedAbundances(peptideWithSetModifications);
                 (double[], double[]) spectrum = unchargedParentCluster.ComputeMzAndIntensity(chargeState);
                 chargeStateClusters.Add(new ChargeStateIsotopeCluster(spectrum,chargeState));
+            }
+            return chargeStateClusters;
+        }
+        private List<ChargeStateIsotopeCluster> PopulateClusters(int[] chargeStates)
+        {
+            List<ChargeStateIsotopeCluster> chargeStateClusters = new();
+
+            foreach (int chargeState in chargeStates)
+            {
+                IsotopicMassesAndNormalizedAbundances unchargedParentCluster = new IsotopicMassesAndNormalizedAbundances(peptideWithSetModifications);
+                (double[], double[]) spectrum = unchargedParentCluster.ComputeMzAndIntensity(chargeState);
+                chargeStateClusters.Add(new ChargeStateIsotopeCluster(spectrum, chargeState));
             }
             return chargeStateClusters;
         }

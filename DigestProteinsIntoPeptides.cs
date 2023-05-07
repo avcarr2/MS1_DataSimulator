@@ -26,7 +26,8 @@ namespace MS1_DataSimulator
 
                     foreach (Protein protein in proteinList)
                     {
-                        peptides.AddRange(protein.Digest(new DigestionParams(protease: "trypsin", minPeptideLength: minPeptideLength, maxMissedCleavages: maxMissedCleavages), new List<Modification>(), new List<Modification>()).ToList());
+                        if (protein.Length > 1000) continue; 
+                        peptides.AddRange(protein.Digest(new DigestionParams(protease: "top-down", minPeptideLength: minPeptideLength, maxMissedCleavages: maxMissedCleavages), new List<Modification>(), new List<Modification>()).ToList());
                     }
                 } 
             }

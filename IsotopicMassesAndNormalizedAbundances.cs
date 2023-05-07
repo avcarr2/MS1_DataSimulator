@@ -29,7 +29,7 @@ namespace MS1_DataSimulator
 
             var isotopicMassesAndNormalizedAbundances = new List<(double massShift, double abundance)>();
 
-            var isotopicDistribution = IsotopicDistribution.GetDistribution(formula, 0.125, 1e-8);
+            var isotopicDistribution = IsotopicDistribution.GetDistribution(formula, 0.1, 1e-4);
 
             double[] masses = isotopicDistribution.Masses.ToArray();
             double[] abundances = isotopicDistribution.Intensities.ToArray();

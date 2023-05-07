@@ -2,13 +2,17 @@
 
 using System.Collections.Generic;
 using System;
+using Chemistry;
+using MathNet.Numerics.Distributions;
+using MathNet.Numerics.Statistics;
+using Proteomics.ProteolyticDigestion;
 
 namespace MS1_DataSimulator
 {
     internal class ChargeStatesAndEnvelopeAbundances
     {
-        public readonly int[] ChargeStates;
-        public readonly double[] EnvelopeAbundances;
+        public int[] ChargeStates;
+        public double[] EnvelopeAbundances;
 
         public ChargeStatesAndEnvelopeAbundances(int[] chargeStates, double[] envelopeAbundances)
         {
@@ -16,42 +20,56 @@ namespace MS1_DataSimulator
             EnvelopeAbundances = envelopeAbundances;
         }
 
-        public ChargeStatesAndEnvelopeAbundances(int maxNumberChargeStates, int minChargeState, int maxChargeState, double minEnvelopeAbundance = 0.1) 
-        { 
-            List<int> chargeStates = new();
-            
-            if(maxNumberChargeStates > (maxChargeState - minChargeState))
+        public void AssignEnvelopeAbundances(int[] chargeStates, int medianChargeState)
+        {
+            ChargeStates = chargeStates;
+            Random seed = new();
+
+            int chargeStateWidth = chargeStates[0] - chargeStates[^1]; 
+
+            List<double> envelopeAbundances = new List<double>();
+            for (double i = 0; i < chargeStates.Length; i++)
             {
-                maxNumberChargeStates = maxChargeState - minChargeState;   
+                envelopeAbundances.Add(Normal.PDF((double)medianChargeState, seed.NextDouble() * chargeStateWidth + 2.5,
+                    i)); 
             }
 
-            Random rnd = new Random();
+            EnvelopeAbundances = envelopeAbundances.ToArray(); 
+        }
 
-            int numChargeStates = (int)Math.Round(maxNumberChargeStates * rnd.NextDouble() + 0.5,0);//add 0.5 makes it so we get at least 1 charge state.
-            List<int> possibleChargeStateList = Enumerable.Range(minChargeState, maxChargeState - numChargeStates).ToList();
-            int index = rnd.Next(possibleChargeStateList.Count);
-            int firstChargeState = possibleChargeStateList[index];
+        public ChargeStatesAndEnvelopeAbundances()
+        {
 
-            for (int i = 0; i < numChargeStates; i++)
+        }
+    }
+
+    public static class Extensions
+    {
+        /// <summary>
+        /// Returns an array of mzVals and the median charge state present. 
+        /// </summary>
+        /// <param name="lowMz"></param>
+        /// <param name="highMz"></param>
+        /// <param name="lowZ"></param>
+        /// <param name="highZ"></param>
+        /// <param name="mzVals"></param>
+        /// <returns></returns>
+        public static int CreateChargeStates(this PeptideWithSetModifications peptide, double lowMz, double highMz, int lowZ, int highZ, out int[] charges)
+        {
+            List<double> mzVals = new List<double>();
+            List<int> chargesPresent = new List<int>();
+            for (int i = highZ; i >= lowZ; i--)
             {
-                chargeStates.Add(firstChargeState + i);
+                double mzVal = peptide.MonoisotopicMass.ToMz(i);
+                if (mzVal >= lowMz && mzVal <= highMz)
+                {
+                    mzVals.Add(mzVal);
+                    chargesPresent.Add(i);
+                }
             }
-            ChargeStates = chargeStates.ToArray();
 
-            //abundance of each envelope is chosen randomly with the min abundance definced in the constructor. 
-            //the sum of all envelope abundances equals 1
-            double[] envelopeAbundances= new double[numChargeStates];
-            for (int i = 0; i < envelopeAbundances.Length; i++)
-            {
-                envelopeAbundances[i] = minEnvelopeAbundance + rnd.Next();
-            }
-            double arraySum = envelopeAbundances.Sum();
-
-            for (int i = 0; i < envelopeAbundances.Length; i++)
-            {
-                envelopeAbundances[i] /= arraySum;
-            }
-            EnvelopeAbundances= envelopeAbundances;
+            charges = chargesPresent.ToArray();
+            return (int)charges.Select(i => (double)i).Median();
         }
     }
 }

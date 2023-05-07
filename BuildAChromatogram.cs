@@ -30,7 +30,8 @@ namespace MS1_DataSimulator
 
             List<List<int>> splits = new() { split.IndicesOfTrainingSet, split.IndicesOfTestSet };
 
-            for (int j = 0; j < splits.Count; j++)
+            //for (int j = 0; j < splits.Count; j++)
+            for (int j = 0; j < 1; j++)
             {
                 int centerOfPeptide = 50; 
                 Scan[] scans = new Scan[maxNumScans];
@@ -40,9 +41,15 @@ namespace MS1_DataSimulator
                     List<int> peakShifts = Enumerable.Range(0, 7).ToList();
                     centerOfPeptide += peakShifts[rnd.Next(peakShifts.Count)];
                     GeneratePeak peak = new GeneratePeak(peakArea, centerOfPeptide);
-                    int maxChargeStateCount = (int)Math.Round(Math.Log10(peakArea), 0);
-                    (int, int) minMax = MinAndMaxChargeStatesForPeptide(proteinDigest.Peptides[trainingIndex], lowestObservedMz,highestObservedMz);
-                    ChargeStatesAndEnvelopeAbundances csea = new ChargeStatesAndEnvelopeAbundances(maxChargeStateCount, minMax.Item1, minMax.Item2);
+                    int maxChargeStateCount = 60;
+                    //(int, int) minMax = MinAndMaxChargeStatesForPeptide(proteinDigest.Peptides[trainingIndex], lowestObservedMz,highestObservedMz);
+
+                    int medianChargeState = proteinDigest.Peptides[trainingIndex]
+                        .CreateChargeStates(lowestObservedMz, highestObservedMz, 5, 120, out int[] chargeStates); 
+                    if(chargeStates.Length == 0) continue;
+                    ChargeStatesAndEnvelopeAbundances csea = new(); 
+                    csea.AssignEnvelopeAbundances(chargeStates, medianChargeState);
+
                     PeptideSpectrum genericSpectrum = new(proteinDigest.Peptides[trainingIndex], csea);
 
                     for (int i = 0; i < peak.RelativeScanPositions.Count; i++)
@@ -75,7 +82,7 @@ namespace MS1_DataSimulator
                 }
                 else
                 {
-                    CreateMzMlAndLabelsFile(Path.Combine(fullPathToOutput, "test.mzML"), scans, minimumIntensity);
+                    //CreateMzMlAndLabelsFile(Path.Combine(fullPathToOutput, "test.mzML"), scans, minimumIntensity);
                 }      
             }
         }
